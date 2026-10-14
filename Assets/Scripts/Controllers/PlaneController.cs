@@ -43,9 +43,14 @@ public class PlaneController : MonoBehaviour
     public Transform projectileSpawnPoint2;
     public float projectileSpeed = 20f;
     public float fireRate = 0.5f;
+    public float projectileDamage = 10f;
     public float projectileLifetime = 5f;
     private bool useSecondProjectileSpawnPoint;
     private float nextFireTime;
+
+    [Header("Plane Stats")]
+    public float health = 100f;
+    public float maxHealth = 100f;
 
     [Header("Cursor Settings")]
     private CursorLockMode previousCursorLockState;
@@ -235,6 +240,29 @@ public class PlaneController : MonoBehaviour
                 float bulletSpeed = Mathf.Max(projectileSpeed * currentSpeed, currentSpeed);
                 projectileRigidbody.linearVelocity = transform.forward * bulletSpeed;
             }
+        }
+    }
+
+    public void TakeDamage(float damageAmount)
+    {
+        health -= damageAmount;
+        health = Mathf.Clamp(health, 0f, maxHealth);
+
+        if (health <= 0f)
+        {
+            // Handle plane destruction or game over logic here
+            Debug.Log("Plane destroyed!");
+            Destroy(gameObject);
+        }
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Projectile"))
+        {
+            // Handle collision with enemy projectile
+            Destroy(other.gameObject);
+            TakeDamage(other.GetComponent<BulletController>().bulletDamage);
         }
     }
 

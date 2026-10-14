@@ -942,7 +942,7 @@ GameObject:
   - component: {fileID: 7387399244111431130}
   m_Layer: 0
   m_Name: Plane Test
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -981,7 +981,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02c21eda9589788469e0c20ba7fb767c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlaneController
-  inputMode: 0
+  inputMode: 1
   invertVerticalFlight: 0
   planeCamera: {fileID: 2444835223444775211}
   cameraStartPosition: {fileID: 1852702471768219498}
@@ -1000,8 +1000,11 @@ MonoBehaviour:
   projectileSpawnPoint1: {fileID: 3816158848926280703}
   projectileSpawnPoint2: {fileID: 1138377908090598514}
   projectileSpeed: 20
-  fireRate: 0.5
+  fireRate: 0.05
+  projectileDamage: 10
   projectileLifetime: 5
+  health: 100
+  maxHealth: 100
 --- !u!54 &7387399244111431130
 Rigidbody:
   m_ObjectHideFlags: 0
