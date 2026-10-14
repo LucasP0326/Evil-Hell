@@ -3,6 +3,16 @@ using UnityEngine.InputSystem;
 
 public class PlaneController : MonoBehaviour
 {
+    public enum InputMode
+    {
+        Mouse,
+        Directional
+    }
+
+    [Header("Input Settings")]
+    public InputMode inputMode = InputMode.Directional;
+    public bool invertVerticalFlight = false;
+
     [Header("Camera Settings")]
     public Camera planeCamera;
     public Transform cameraStartPosition;
@@ -14,7 +24,7 @@ public class PlaneController : MonoBehaviour
     private float cameraPitch;
     private Vector3 cameraHomeOffset;
     private Quaternion cameraHomeRotation;
-    private float cameraReturnBlend = 1f;
+    private float cameraReturnBlend = 0f;
 
     [Header("Plane Settings")]
     public float initialSpeed = 10f;
@@ -82,31 +92,95 @@ public class PlaneController : MonoBehaviour
     {
         Keyboard keyboard = Keyboard.current;
         if (keyboard != null)
-        {
-            float throttleInput = (keyboard.wKey.isPressed ? 1f : 0f) - (keyboard.sKey.isPressed ? 1f : 0f);
-            currentSpeed = Mathf.Clamp(currentSpeed + throttleInput * acceleration * Time.deltaTime, minSpeed, maxSpeed);
+            if (inputMode == InputMode.Mouse)
+            {
+                //W and S for Accelerate and Decelerate
+                float throttleInput = (keyboard.wKey.isPressed ? 1f : 0f) - (keyboard.sKey.isPressed ? 1f : 0f);
+                currentSpeed = Mathf.Clamp(currentSpeed + throttleInput * acceleration * Time.deltaTime, minSpeed, maxSpeed);
 
-            float rollInput = (keyboard.aKey.isPressed ? 1f : 0f) - (keyboard.dKey.isPressed ? 1f : 0f);
-            targetRotation *= Quaternion.AngleAxis(rollInput * rotationSpeed * Time.deltaTime, Vector3.forward);
-        }
+                //A and D for Roll
+                float rollInput = (keyboard.aKey.isPressed ? 1f : 0f) - (keyboard.dKey.isPressed ? 1f : 0f);
+                targetRotation *= Quaternion.AngleAxis(rollInput * rotationSpeed * Time.deltaTime, Vector3.forward);
+
+                //E and Q for Yaw
+                float yawInput = (keyboard.eKey.isPressed ? 1f : 0f) - (keyboard.qKey.isPressed ? 1f : 0f);
+                targetRotation *= Quaternion.AngleAxis(yawInput * rotationSpeed * Time.deltaTime, Vector3.up);
+            }
+            if (inputMode == InputMode.Directional)
+            {
+                //Space and Ctrl for Accelerate and Decelerate
+                if (keyboard.spaceKey.isPressed)
+                {
+                    currentSpeed = Mathf.Clamp(currentSpeed + acceleration * Time.deltaTime, minSpeed, maxSpeed);
+                }
+                else if (keyboard.leftCtrlKey.isPressed)
+                {
+                    currentSpeed = Mathf.Clamp(currentSpeed - acceleration * Time.deltaTime, minSpeed, maxSpeed);
+                }
+                //float throttleInput = (keyboard.wKey.isPressed ? 1f : 0f) - (keyboard.sKey.isPressed ? 1f : 0f);
+                //currentSpeed = Mathf.Clamp(currentSpeed + throttleInput * acceleration * Time.deltaTime, minSpeed, maxSpeed);
+
+                //A and D for Roll
+                float rollInput = (keyboard.aKey.isPressed ? 1f : 0f) - (keyboard.dKey.isPressed ? 1f : 0f);
+                targetRotation *= Quaternion.AngleAxis(rollInput * rotationSpeed * Time.deltaTime, Vector3.forward);
+
+                //E and Q for Yaw
+                float yawInput = (keyboard.eKey.isPressed ? 1f : 0f) - (keyboard.qKey.isPressed ? 1f : 0f);
+                targetRotation *= Quaternion.AngleAxis(yawInput * rotationSpeed * Time.deltaTime, Vector3.up);
+
+                //W and S for Pitch (Change with invertVerticalFlight)
+                if (invertVerticalFlight)
+                {
+                    float pitchInput = (keyboard.sKey.isPressed ? 1f : 0f) - (keyboard.wKey.isPressed ? 1f : 0f);
+                    targetRotation *= Quaternion.AngleAxis(pitchInput * rotationSpeed * Time.deltaTime, Vector3.right);
+                }
+                else
+                {
+                    float pitchInput = (keyboard.wKey.isPressed ? 1f : 0f) - (keyboard.sKey.isPressed ? 1f : 0f);
+                    targetRotation *= Quaternion.AngleAxis(pitchInput * rotationSpeed * Time.deltaTime, Vector3.right);
+                }
+            }
 
         Mouse mouse = Mouse.current;
-        if (mouse != null && Cursor.lockState == CursorLockMode.Locked)
+        if (inputMode == InputMode.Mouse)
+        {
+            if (mouse != null && Cursor.lockState == CursorLockMode.Locked)
+            {
+                Vector2 mouseDelta = mouse.delta.ReadValue();
+                if (mouse.leftButton.isPressed)
+                {
+                    cameraReturnBlend = 0f;
+                    cameraYaw += mouseDelta.x * cameraOrbitSensitivity;
+                    cameraPitch = Mathf.Clamp(cameraPitch - mouseDelta.y * cameraOrbitSensitivity, minCameraPitch, maxCameraPitch);
+                }
+                else
+                {
+                    cameraYaw = Mathf.MoveTowardsAngle(cameraYaw, 0f, cameraReturnSpeed * Time.deltaTime);
+                    cameraPitch = Mathf.MoveTowards(cameraPitch, 0f, cameraReturnSpeed * Time.deltaTime);
+                    cameraReturnBlend = Mathf.MoveTowards(cameraReturnBlend, 1f, cameraReturnSpeed / 90f * Time.deltaTime);
+                    mouseDelta *= mouseSensitivity;
+                    targetRotation *= Quaternion.Euler(-mouseDelta.y, mouseDelta.x, 0f);
+                }
+            }
+        }
+
+        if (inputMode == InputMode.Directional)
         {
             Vector2 mouseDelta = mouse.delta.ReadValue();
-            if (mouse.leftButton.isPressed)
+            if (mouse != null && Cursor.lockState == CursorLockMode.Locked)
             {
-                cameraReturnBlend = 0f;
-                cameraYaw += mouseDelta.x * cameraOrbitSensitivity;
-                cameraPitch = Mathf.Clamp(cameraPitch - mouseDelta.y * cameraOrbitSensitivity, minCameraPitch, maxCameraPitch);
-            }
-            else
-            {
-                cameraYaw = Mathf.MoveTowardsAngle(cameraYaw, 0f, cameraReturnSpeed * Time.deltaTime);
-                cameraPitch = Mathf.MoveTowards(cameraPitch, 0f, cameraReturnSpeed * Time.deltaTime);
-                cameraReturnBlend = Mathf.MoveTowards(cameraReturnBlend, 1f, cameraReturnSpeed / 90f * Time.deltaTime);
-                mouseDelta *= mouseSensitivity;
-                targetRotation *= Quaternion.Euler(-mouseDelta.y, mouseDelta.x, 0f);
+                if (mouse.leftButton.isPressed)
+                {
+                    cameraReturnBlend = 0f;
+                    cameraYaw += mouseDelta.x * cameraOrbitSensitivity;
+                    cameraPitch = Mathf.Clamp(cameraPitch - mouseDelta.y * cameraOrbitSensitivity, minCameraPitch, maxCameraPitch);
+                }
+                else
+                {
+                    cameraYaw = Mathf.MoveTowardsAngle(cameraYaw, 0f, cameraReturnSpeed * Time.deltaTime);
+                    cameraPitch = Mathf.MoveTowards(cameraPitch, 0f, cameraReturnSpeed * Time.deltaTime);
+                    cameraReturnBlend = Mathf.MoveTowards(cameraReturnBlend, 1f, cameraReturnSpeed / 90f * Time.deltaTime);
+                }
             }
         }
     }

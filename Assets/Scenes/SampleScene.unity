@@ -308,7 +308,7 @@ GameObject:
   - component: {fileID: 1980857732}
   - component: {fileID: 1980857731}
   m_Layer: 0
-  m_Name: Capsule
+  m_Name: Blimp
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -573,6 +573,14 @@ PrefabInstance:
     - target: {fileID: 7277205538265031411, guid: e34dad882d59dc54884a909292f5f66f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8921281638330613858, guid: e34dad882d59dc54884a909292f5f66f, type: 3}
+      propertyPath: inputMode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8921281638330613858, guid: e34dad882d59dc54884a909292f5f66f, type: 3}
+      propertyPath: cameraReturnSpeed
+      value: 10000
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
