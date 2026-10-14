@@ -26,7 +26,7 @@ public class PlaneController : MonoBehaviour
     private Quaternion cameraHomeRotation;
     private float cameraReturnBlend = 0f;
 
-    [Header("Plane Settings")]
+    [Header("Movement Settings")]
     public float initialSpeed = 10f;
     public float maxSpeed = 50f;
     public float minSpeed = 5f;
@@ -34,9 +34,18 @@ public class PlaneController : MonoBehaviour
     public float rotationSpeed = 100f;
     public float acceleration = 10f;
     public float mouseSensitivity = 0.1f;
-
     private Rigidbody planeRigidbody;
     private Quaternion targetRotation;
+
+    [Header("Plane Combat Settings")]
+    public GameObject projectilePrefab;
+    public Transform projectileSpawnPoint1;
+    public Transform projectileSpawnPoint2;
+    public float projectileSpeed = 20f;
+    public float fireRate = 0.5f;
+    public float projectileLifetime = 5f;
+    private bool useSecondProjectileSpawnPoint;
+    private float nextFireTime;
 
     [Header("Cursor Settings")]
     private CursorLockMode previousCursorLockState;
@@ -147,7 +156,7 @@ public class PlaneController : MonoBehaviour
             if (mouse != null && Cursor.lockState == CursorLockMode.Locked)
             {
                 Vector2 mouseDelta = mouse.delta.ReadValue();
-                if (mouse.leftButton.isPressed)
+                if (keyboard.ctrlKey.isPressed)
                 {
                     cameraReturnBlend = 0f;
                     cameraYaw += mouseDelta.x * cameraOrbitSensitivity;
@@ -169,19 +178,17 @@ public class PlaneController : MonoBehaviour
             Vector2 mouseDelta = mouse.delta.ReadValue();
             if (mouse != null && Cursor.lockState == CursorLockMode.Locked)
             {
-                if (mouse.leftButton.isPressed)
-                {
-                    cameraReturnBlend = 0f;
-                    cameraYaw += mouseDelta.x * cameraOrbitSensitivity;
-                    cameraPitch = Mathf.Clamp(cameraPitch - mouseDelta.y * cameraOrbitSensitivity, minCameraPitch, maxCameraPitch);
-                }
-                else
-                {
-                    cameraYaw = Mathf.MoveTowardsAngle(cameraYaw, 0f, cameraReturnSpeed * Time.deltaTime);
-                    cameraPitch = Mathf.MoveTowards(cameraPitch, 0f, cameraReturnSpeed * Time.deltaTime);
-                    cameraReturnBlend = Mathf.MoveTowards(cameraReturnBlend, 1f, cameraReturnSpeed / 90f * Time.deltaTime);
-                }
+                cameraReturnBlend = 0f;
+                cameraYaw += mouseDelta.x * cameraOrbitSensitivity;
+                cameraPitch = Mathf.Clamp(cameraPitch - mouseDelta.y * cameraOrbitSensitivity, minCameraPitch, maxCameraPitch);
             }
+        }
+
+        // Shoot continuously while the left mouse button is held.
+        if (mouse != null && mouse.leftButton.isPressed && Time.time >= nextFireTime)
+        {
+            ShootProjectile();
+            nextFireTime = Time.time + fireRate;
         }
     }
 
@@ -203,6 +210,32 @@ public class PlaneController : MonoBehaviour
     {
         planeRigidbody.MoveRotation(targetRotation);
         planeRigidbody.linearVelocity = targetRotation * Vector3.forward * currentSpeed;
+    }
+
+    public void ShootProjectile()
+    {
+        if (projectilePrefab != null)
+        {
+            Transform spawnPoint = useSecondProjectileSpawnPoint ? projectileSpawnPoint2 : projectileSpawnPoint1;
+            if (spawnPoint == null)
+            {
+                spawnPoint = useSecondProjectileSpawnPoint ? projectileSpawnPoint1 : projectileSpawnPoint2;
+            }
+
+            if (spawnPoint == null)
+            {
+                return;
+            }
+
+            useSecondProjectileSpawnPoint = !useSecondProjectileSpawnPoint;
+            GameObject projectile = Instantiate(projectilePrefab, spawnPoint.position, spawnPoint.rotation);
+            Rigidbody projectileRigidbody = projectile.GetComponent<Rigidbody>();
+            if (projectileRigidbody != null)
+            {
+                float bulletSpeed = Mathf.Max(projectileSpeed * currentSpeed, currentSpeed);
+                projectileRigidbody.linearVelocity = transform.forward * bulletSpeed;
+            }
+        }
     }
 
     private static void LockCursor()
