@@ -575,6 +575,14 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8921281638330613858, guid: e34dad882d59dc54884a909292f5f66f, type: 3}
+      propertyPath: maxSpeed
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 8921281638330613858, guid: e34dad882d59dc54884a909292f5f66f, type: 3}
+      propertyPath: minSpeed
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 8921281638330613858, guid: e34dad882d59dc54884a909292f5f66f, type: 3}
       propertyPath: inputMode
       value: 0
       objectReference: {fileID: 0}
