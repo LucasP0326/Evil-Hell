@@ -133,7 +133,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1200514891294218005, guid: 1e4826dbb9f4d894e8088be525077901, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6454904119107504384, guid: 1e4826dbb9f4d894e8088be525077901, type: 3}
       propertyPath: damage
@@ -145,7 +145,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6454904119107504384, guid: 1e4826dbb9f4d894e8088be525077901, type: 3}
       propertyPath: projectileSpeed
-      value: 250
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 7549909236261195434, guid: 1e4826dbb9f4d894e8088be525077901, type: 3}
       propertyPath: m_LocalScale.x
@@ -350,7 +350,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1200514891294218005, guid: 1e4826dbb9f4d894e8088be525077901, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6454904119107504384, guid: 1e4826dbb9f4d894e8088be525077901, type: 3}
       propertyPath: damage
@@ -362,7 +362,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6454904119107504384, guid: 1e4826dbb9f4d894e8088be525077901, type: 3}
       propertyPath: projectileSpeed
-      value: 250
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 7549909236261195434, guid: 1e4826dbb9f4d894e8088be525077901, type: 3}
       propertyPath: m_LocalScale.x
@@ -440,7 +440,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1200514891294218005, guid: 1e4826dbb9f4d894e8088be525077901, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6454904119107504384, guid: 1e4826dbb9f4d894e8088be525077901, type: 3}
       propertyPath: damage
@@ -452,7 +452,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6454904119107504384, guid: 1e4826dbb9f4d894e8088be525077901, type: 3}
       propertyPath: projectileSpeed
-      value: 250
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 7549909236261195434, guid: 1e4826dbb9f4d894e8088be525077901, type: 3}
       propertyPath: m_LocalScale.x
@@ -579,7 +579,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1200514891294218005, guid: 1e4826dbb9f4d894e8088be525077901, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6454904119107504384, guid: 1e4826dbb9f4d894e8088be525077901, type: 3}
       propertyPath: damage
@@ -591,7 +591,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6454904119107504384, guid: 1e4826dbb9f4d894e8088be525077901, type: 3}
       propertyPath: projectileSpeed
-      value: 250
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 7549909236261195434, guid: 1e4826dbb9f4d894e8088be525077901, type: 3}
       propertyPath: m_LocalScale.x
@@ -669,7 +669,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1200514891294218005, guid: 1e4826dbb9f4d894e8088be525077901, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6454904119107504384, guid: 1e4826dbb9f4d894e8088be525077901, type: 3}
       propertyPath: damage
@@ -681,7 +681,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6454904119107504384, guid: 1e4826dbb9f4d894e8088be525077901, type: 3}
       propertyPath: projectileSpeed
-      value: 250
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 7549909236261195434, guid: 1e4826dbb9f4d894e8088be525077901, type: 3}
       propertyPath: m_LocalScale.x
@@ -801,6 +801,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 90
       objectReference: {fileID: 0}
+    - target: {fileID: 2466191423975466905, guid: f6c249e506fb9ea469a23aae1a9ece31, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4792966377972597159, guid: f6c249e506fb9ea469a23aae1a9ece31, type: 3}
       propertyPath: m_Name
       value: Blimp
@@ -842,17 +846,9 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 5008749858743278340, guid: e34dad882d59dc54884a909292f5f66f, type: 3}
-      propertyPath: m_Enabled
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 5599157599484506961, guid: e34dad882d59dc54884a909292f5f66f, type: 3}
       propertyPath: m_Name
       value: Plane Test
-      objectReference: {fileID: 0}
-    - target: {fileID: 7172598301216211677, guid: e34dad882d59dc54884a909292f5f66f, type: 3}
-      propertyPath: m_Enabled
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7277205538265031411, guid: e34dad882d59dc54884a909292f5f66f, type: 3}
       propertyPath: m_LocalPosition.x
@@ -894,17 +890,7 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8921281638330613858, guid: e34dad882d59dc54884a909292f5f66f, type: 3}
-      propertyPath: inputMode
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 8921281638330613858, guid: e34dad882d59dc54884a909292f5f66f, type: 3}
-      propertyPath: projectileSpeed
-      value: 500
-      objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 7172598301216211677, guid: e34dad882d59dc54884a909292f5f66f, type: 3}
-    - {fileID: 5008749858743278340, guid: e34dad882d59dc54884a909292f5f66f, type: 3}
+    m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []

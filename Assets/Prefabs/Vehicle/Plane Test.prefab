@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 3816158848926280703}
   - component: {fileID: 6585428245004969567}
   - component: {fileID: 2051074095113312359}
-  - component: {fileID: 5008749858743278340}
   m_Layer: 0
   m_Name: Bullet Point L
   m_TagString: Untagged
@@ -91,27 +90,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &5008749858743278340
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 691531929211515793}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &1563756830093198353
 GameObject:
   m_ObjectHideFlags: 0
@@ -981,7 +959,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02c21eda9589788469e0c20ba7fb767c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlaneController
-  inputMode: 1
+  inputMode: 0
   invertVerticalFlight: 0
   planeCamera: {fileID: 2444835223444775211}
   cameraStartPosition: {fileID: 1852702471768219498}
@@ -1677,7 +1655,6 @@ GameObject:
   - component: {fileID: 1138377908090598514}
   - component: {fileID: 8613249121657832}
   - component: {fileID: 4307267195822262367}
-  - component: {fileID: 7172598301216211677}
   m_Layer: 0
   m_Name: Bullet Point R
   m_TagString: Untagged
@@ -1757,27 +1734,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!65 &7172598301216211677
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8069325883121191151}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &8357241360244147978
 GameObject:
   m_ObjectHideFlags: 0
