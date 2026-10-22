@@ -9,12 +9,22 @@ public class PlaneController : MonoBehaviour
         Directional
     }
 
+    public enum CameraMode
+    {
+        ThirdPerson,
+        FirstPerson,
+        FirstPersonCockpit
+    }
+
     [Header("Input Settings")]
     public InputMode inputMode = InputMode.Directional;
     public bool invertVerticalFlight = false;
 
     [Header("Camera Settings")]
+    public CameraMode cameraMode = CameraMode.ThirdPerson;
     public Camera planeCamera;
+        public Camera firstPersonCamera;
+    public Camera firstPersonCockpitCamera;
     public Transform cameraStartPosition;
     public float cameraOrbitSensitivity = 0.2f;
     public float cameraReturnSpeed = 180f;
@@ -195,6 +205,11 @@ public class PlaneController : MonoBehaviour
             ShootProjectile();
             nextFireTime = Time.time + fireRate;
         }
+
+        if (keyboard != null && keyboard.vKey.wasPressedThisFrame)
+        {
+            SwitchPerspective();
+        }
     }
 
     void LateUpdate()
@@ -215,6 +230,37 @@ public class PlaneController : MonoBehaviour
     {
         planeRigidbody.MoveRotation(targetRotation);
         planeRigidbody.linearVelocity = targetRotation * Vector3.forward * currentSpeed;
+    }
+
+    public void SwitchPerspective()
+    {
+        if (cameraMode == CameraMode.ThirdPerson)
+        {
+            cameraMode = CameraMode.FirstPerson;
+            if (firstPersonCamera != null)
+            {
+                planeCamera.enabled = false;
+                firstPersonCamera.enabled = true;
+            }
+        }
+        else if (cameraMode == CameraMode.FirstPerson)
+        {
+            cameraMode = CameraMode.FirstPersonCockpit;
+            if (firstPersonCockpitCamera != null)
+            {
+                firstPersonCamera.enabled = false;
+                firstPersonCockpitCamera.enabled = true;
+            }
+        }
+        else if (cameraMode == CameraMode.FirstPersonCockpit)
+        {
+            cameraMode = CameraMode.ThirdPerson;
+            if (planeCamera != null)
+            {
+                firstPersonCockpitCamera.enabled = false;
+                planeCamera.enabled = true;
+            }
+        }
     }
 
     public void ShootProjectile()

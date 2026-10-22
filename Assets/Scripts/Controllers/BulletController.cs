@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 using System.Collections;
 
 public class BulletController : MonoBehaviour
@@ -19,21 +18,24 @@ public class BulletController : MonoBehaviour
     public float bulletSpeed = 10f;
     public float bulletLifetime = 5f;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    private Rigidbody bulletRigidbody;
+    private Collider bulletCollider;
+    private bool hitResolved;
+
     void Awake()
     {
+        bulletRigidbody = GetComponent<Rigidbody>();
+        bulletCollider = GetComponent<Collider>();
         planeController = FindObjectOfType<PlaneController>();
-        InitializeBullet(planeController.projectileSpeed, planeController.projectileLifetime, planeController.projectileDamage);
-    }
-    void Start()
-    {
 
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
+        if (planeController != null)
+        {
+            InitializeBullet(planeController.projectileSpeed, planeController.projectileLifetime, planeController.projectileDamage);
+        }
+        else
+        {
+            StartCoroutine(DestroyAfterLifetime());
+        }
     }
 
     public void InitializeBullet(float speed, float lifetime, float damage)
@@ -42,6 +44,64 @@ public class BulletController : MonoBehaviour
         bulletLifetime = lifetime;
         bulletDamage = damage;
         StartCoroutine(DestroyAfterLifetime());
+    }
+
+    void FixedUpdate()
+    {
+        if (hitResolved || bulletRigidbody == null)
+        {
+            return;
+        }
+
+        Vector3 velocity = bulletRigidbody.linearVelocity;
+        float distance = velocity.magnitude * Time.fixedDeltaTime;
+        if (distance <= 0f)
+        {
+            return;
+        }
+
+        RaycastHit[] hits = bulletRigidbody.SweepTestAll(
+            velocity.normalized,
+            distance,
+            QueryTriggerInteraction.Ignore);
+
+        TurretController hitTurret = null;
+        PlaneController hitPlane = null;
+        float closestDistance = float.MaxValue;
+
+        foreach (RaycastHit hit in hits)
+        {
+            TurretController turret = hit.collider.GetComponentInParent<TurretController>();
+            PlaneController plane = hit.collider.GetComponentInParent<PlaneController>();
+            if ((turret != null || plane != null) && hit.distance < closestDistance)
+            {
+                hitTurret = turret;
+                hitPlane = plane;
+                closestDistance = hit.distance;
+            }
+        }
+
+        if (hitTurret == null && hitPlane == null)
+        {
+            return;
+        }
+
+        hitResolved = true;
+        if (bulletCollider != null)
+        {
+            bulletCollider.enabled = false;
+        }
+
+        if (hitTurret != null)
+        {
+            hitTurret.TakeDamage(bulletDamage);
+        }
+        else if (hitPlane != null)
+        {
+            hitPlane.TakeDamage(bulletDamage);
+        }
+
+        Destroy(gameObject);
     }
 
     IEnumerator DestroyAfterLifetime()
