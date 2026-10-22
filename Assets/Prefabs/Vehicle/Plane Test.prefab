@@ -1098,7 +1098,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02c21eda9589788469e0c20ba7fb767c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlaneController
-  inputMode: 0
+  inputMode: 1
   invertVerticalFlight: 0
   cameraMode: 0
   planeCamera: {fileID: 2444835223444775211}
@@ -1123,6 +1123,10 @@ MonoBehaviour:
   fireRate: 0.05
   projectileDamage: 10
   projectileLifetime: 5
+  target: {fileID: 0}
+  timeToLockOnTarget: 0.1
+  driftToTargetSpeed: 5
+  targetLockRange: 500
   health: 1000
   maxHealth: 1000
 --- !u!54 &7387399244111431130

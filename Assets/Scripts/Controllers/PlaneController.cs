@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -57,6 +59,12 @@ public class PlaneController : MonoBehaviour
     public float projectileLifetime = 5f;
     private bool useSecondProjectileSpawnPoint;
     private float nextFireTime;
+
+    [Header("Plane Targeting Settings")]
+    public GameObject target;
+    public float timeToLockOnTarget = 0.5f;
+    public float driftToTargetSpeed = 5f;
+    public float targetLockRange = 500f;
 
     [Header("Plane Stats")]
     public float health = 100f;
@@ -163,6 +171,7 @@ public class PlaneController : MonoBehaviour
                     float pitchInput = (keyboard.wKey.isPressed ? 1f : 0f) - (keyboard.sKey.isPressed ? 1f : 0f);
                     targetRotation *= Quaternion.AngleAxis(pitchInput * rotationSpeed * Time.deltaTime, Vector3.right);
                 }
+
             }
 
         Mouse mouse = Mouse.current;
@@ -206,9 +215,16 @@ public class PlaneController : MonoBehaviour
             nextFireTime = Time.time + fireRate;
         }
 
+        // Switch camera perspective when the 'V' key is pressed.
         if (keyboard != null && keyboard.vKey.wasPressedThisFrame)
         {
             SwitchPerspective();
+        }
+
+        //Lock onto target when Tab is pressed
+        if (keyboard != null && keyboard.tabKey.wasPressedThisFrame)
+        {
+            AcquireTarget();
         }
     }
 
@@ -261,6 +277,69 @@ public class PlaneController : MonoBehaviour
                 planeCamera.enabled = true;
             }
         }
+    }
+
+    public void AcquireTarget()
+    {
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, targetLockRange);
+        Camera targetCamera = Camera.main;
+        if (targetCamera == null || !targetCamera.isActiveAndEnabled)
+        {
+            targetCamera = planeCamera;
+        }
+        if (targetCamera == null || !targetCamera.isActiveAndEnabled)
+        {
+            targetCamera = firstPersonCamera;
+        }
+        if (targetCamera == null || !targetCamera.isActiveAndEnabled)
+        {
+            targetCamera = firstPersonCockpitCamera;
+        }
+
+        if (targetCamera == null || !targetCamera.isActiveAndEnabled)
+        {
+            return;
+        }
+
+        List<GameObject> targets = new List<GameObject>();
+        HashSet<GameObject> uniqueTargets = new HashSet<GameObject>();
+
+        foreach (Collider hitCollider in hitColliders)
+        {
+            if (hitCollider.CompareTag("Enemy"))
+            {
+                GameObject enemy = hitCollider.gameObject;
+                if (uniqueTargets.Add(enemy) && targetCamera.WorldToScreenPoint(enemy.transform.position).z > 0f)
+                {
+                    targets.Add(enemy);
+                }
+            }
+        }
+
+        targets.Sort((a, b) =>
+        {
+            Vector2 screenCenter = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
+            Vector3 aScreenPosition = targetCamera.WorldToScreenPoint(a.transform.position);
+            Vector3 bScreenPosition = targetCamera.WorldToScreenPoint(b.transform.position);
+            float aCenterDistance = ((Vector2)aScreenPosition - screenCenter).sqrMagnitude;
+            float bCenterDistance = ((Vector2)bScreenPosition - screenCenter).sqrMagnitude;
+            int centerComparison = aCenterDistance.CompareTo(bCenterDistance);
+            return centerComparison != 0
+                ? centerComparison
+                : Vector3.Distance(transform.position, a.transform.position).CompareTo(
+                    Vector3.Distance(transform.position, b.transform.position));
+        });
+
+        if (targets.Count == 0)
+        {
+            target = null;
+            return;
+        }
+
+        int currentIndex = targets.IndexOf(target);
+        target = targets[(currentIndex + 1) % targets.Count];
+
+        StartCoroutine(LockOnTargetCoroutine());
     }
 
     public void ShootProjectile()
@@ -316,5 +395,33 @@ public class PlaneController : MonoBehaviour
     {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+    }
+
+    IEnumerator LockOnTargetCoroutine()
+    {
+        float elapsedTime = 0f;
+        while (elapsedTime < timeToLockOnTarget)
+        {
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+        if (target == null || driftToTargetSpeed <= 0f)
+        {
+            yield break;
+        }
+
+        Vector3 directionToTarget = target.transform.position - transform.position;
+        if (directionToTarget.sqrMagnitude > 0f)
+        {
+            Quaternion desiredRotation = Quaternion.LookRotation(directionToTarget, transform.up);
+            while (Quaternion.Angle(targetRotation, desiredRotation) > 0.1f)
+            {
+                targetRotation = Quaternion.RotateTowards(
+                    targetRotation,
+                    desiredRotation,
+                    driftToTargetSpeed * Time.deltaTime);
+                yield return null;
+            }
+        }
     }
 }
