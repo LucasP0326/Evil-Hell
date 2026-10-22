@@ -1127,6 +1127,7 @@ MonoBehaviour:
   timeToLockOnTarget: 0.1
   driftToTargetSpeed: 5
   targetLockRange: 500
+  targetAimHeightOffset: -2
   health: 1000
   maxHealth: 1000
 --- !u!54 &7387399244111431130

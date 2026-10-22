@@ -65,6 +65,7 @@ public class PlaneController : MonoBehaviour
     public float timeToLockOnTarget = 0.5f;
     public float driftToTargetSpeed = 5f;
     public float targetLockRange = 500f;
+    public float targetAimHeightOffset = -2f;
 
     [Header("Plane Stats")]
     public float health = 100f;
@@ -399,6 +400,7 @@ public class PlaneController : MonoBehaviour
 
     IEnumerator LockOnTargetCoroutine()
     {
+        Debug.Log("Locking on target: " + (target != null ? target.name : "None"));
         float elapsedTime = 0f;
         while (elapsedTime < timeToLockOnTarget)
         {
@@ -410,7 +412,8 @@ public class PlaneController : MonoBehaviour
             yield break;
         }
 
-        Vector3 directionToTarget = target.transform.position - transform.position;
+        Vector3 aimPoint = target.transform.position + Vector3.up * targetAimHeightOffset;
+        Vector3 directionToTarget = aimPoint - transform.position;
         if (directionToTarget.sqrMagnitude > 0f)
         {
             Quaternion desiredRotation = Quaternion.LookRotation(directionToTarget, transform.up);
