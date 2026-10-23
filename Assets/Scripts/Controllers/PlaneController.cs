@@ -48,17 +48,21 @@ public class PlaneController : MonoBehaviour
     public float mouseSensitivity = 0.1f;
     private Rigidbody planeRigidbody;
     private Quaternion targetRotation;
+    private Vector3 targetAimPoint;
+    private Vector3 directionToTarget;
+    private Quaternion desiredTargetRotation;
 
     [Header("Plane Combat Settings")]
     public GameObject projectilePrefab;
-    public Transform projectileSpawnPoint1;
-    public Transform projectileSpawnPoint2;
     public float projectileSpeed = 20f;
     public float fireRate = 0.5f;
     public float projectileDamage = 10f;
     public float projectileLifetime = 5f;
+    public Transform projectileSpawnPoint1;
+    public Transform projectileSpawnPoint2;
     private bool useSecondProjectileSpawnPoint;
     private float nextFireTime;
+    public GameObject[] MissilePrefabs;
 
     [Header("Plane Targeting Settings")]
     public GameObject target;
@@ -141,8 +145,8 @@ public class PlaneController : MonoBehaviour
             }
             if (inputMode == InputMode.Directional)
             {
-                //Space and Ctrl for Accelerate and Decelerate
-                if (keyboard.spaceKey.isPressed)
+                //Shift and Ctrl for Accelerate and Decelerate
+                if (keyboard.shiftKey.isPressed)
                 {
                     currentSpeed = Mathf.Clamp(currentSpeed + acceleration * Time.deltaTime, minSpeed, maxSpeed);
                 }
@@ -222,8 +226,8 @@ public class PlaneController : MonoBehaviour
             SwitchPerspective();
         }
 
-        //Lock onto target when Tab is pressed
-        if (keyboard != null && keyboard.tabKey.wasPressedThisFrame)
+        //Lock onto target when Right Mouse is pressed
+        if (mouse != null && mouse.rightButton.wasPressedThisFrame)
         {
             AcquireTarget();
         }
@@ -334,13 +338,15 @@ public class PlaneController : MonoBehaviour
         if (targets.Count == 0)
         {
             target = null;
+            ResetTargetDrift();
             return;
         }
 
         int currentIndex = targets.IndexOf(target);
         target = targets[(currentIndex + 1) % targets.Count];
 
-        StartCoroutine(LockOnTargetCoroutine());
+        if (inputMode == InputMode.Directional)
+            StartCoroutine(LockOnTargetCoroutine());
     }
 
     public void ShootProjectile()
@@ -404,27 +410,46 @@ public class PlaneController : MonoBehaviour
         float elapsedTime = 0f;
         while (elapsedTime < timeToLockOnTarget)
         {
+            if (target == null)
+            {
+                ResetTargetDrift();
+                yield break;
+            }
             elapsedTime += Time.deltaTime;
             yield return null;
         }
         if (target == null || driftToTargetSpeed <= 0f)
         {
+            ResetTargetDrift();
             yield break;
         }
 
-        Vector3 aimPoint = target.transform.position + Vector3.up * targetAimHeightOffset;
-        Vector3 directionToTarget = aimPoint - transform.position;
+        targetAimPoint = target.transform.position + Vector3.up * targetAimHeightOffset;
+        directionToTarget = targetAimPoint - transform.position;
         if (directionToTarget.sqrMagnitude > 0f)
         {
-            Quaternion desiredRotation = Quaternion.LookRotation(directionToTarget, transform.up);
-            while (Quaternion.Angle(targetRotation, desiredRotation) > 0.1f)
+            desiredTargetRotation = Quaternion.LookRotation(directionToTarget, transform.up);
+            while (target != null && Quaternion.Angle(targetRotation, desiredTargetRotation) > 0.1f)
             {
                 targetRotation = Quaternion.RotateTowards(
                     targetRotation,
-                    desiredRotation,
+                    desiredTargetRotation,
                     driftToTargetSpeed * Time.deltaTime);
                 yield return null;
             }
+
+            if (target == null)
+            {
+                ResetTargetDrift();
+            }
         }
+    }
+
+    private void ResetTargetDrift()
+    {
+        targetAimPoint = Vector3.zero;
+        directionToTarget = Vector3.zero;
+        targetRotation = planeRigidbody != null ? planeRigidbody.rotation : transform.rotation;
+        desiredTargetRotation = targetRotation;
     }
 }
