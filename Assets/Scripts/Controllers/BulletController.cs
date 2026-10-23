@@ -14,6 +14,7 @@ public class BulletController : MonoBehaviour
     public PlaneController planeController; // Reference to the PlaneController script
 
     [Header("Bullet Properties")]
+    public BulletType bulletType;
     public float bulletDamage = 10f;
     public float bulletSpeed = 10f;
     public float bulletLifetime = 5f;

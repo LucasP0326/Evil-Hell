@@ -52,7 +52,7 @@ public class PlaneController : MonoBehaviour
     private Vector3 directionToTarget;
     private Quaternion desiredTargetRotation;
 
-    [Header("Plane Combat Settings")]
+    [Header("Plane Bullet Settings")]
     public GameObject projectilePrefab;
     public float projectileSpeed = 20f;
     public float fireRate = 0.5f;
@@ -62,7 +62,11 @@ public class PlaneController : MonoBehaviour
     public Transform projectileSpawnPoint2;
     private bool useSecondProjectileSpawnPoint;
     private float nextFireTime;
+
+    [Header("Plane Missile Settings")]
     public GameObject[] MissilePrefabs;
+    public Transform[] MissileSpawnPoints;
+
 
     [Header("Plane Targeting Settings")]
     public GameObject target;
@@ -104,6 +108,11 @@ public class PlaneController : MonoBehaviour
 
             cameraHomeOffset = transform.InverseTransformPoint(cameraStartPosition.position);
             cameraHomeRotation = Quaternion.Inverse(transform.rotation) * cameraStartPosition.rotation;
+        }
+
+        if (MissilePrefabs.Length != 0)
+        {
+            LoadMissiles();
         }
     }
 
@@ -218,6 +227,11 @@ public class PlaneController : MonoBehaviour
         {
             ShootProjectile();
             nextFireTime = Time.time + fireRate;
+        }
+
+        if (keyboard != null && keyboard.spaceKey.wasPressedThisFrame)
+        {
+            FireMissile();
         }
 
         // Switch camera perspective when the 'V' key is pressed.
@@ -371,6 +385,56 @@ public class PlaneController : MonoBehaviour
             {
                 float bulletSpeed = Mathf.Max(projectileSpeed * currentSpeed, currentSpeed);
                 projectileRigidbody.linearVelocity = transform.forward * bulletSpeed;
+            }
+        }
+    }
+
+    public void LoadMissiles()
+    {
+        if (MissilePrefabs.Length == 0 || MissileSpawnPoints.Length == 0)
+        {
+            Debug.LogWarning("No missile prefabs or spawn points assigned.");
+            return;
+        }
+
+        for (int i = 0; i < MissilePrefabs.Length; i++)
+        {
+            GameObject missilePrefab = MissilePrefabs[i];
+            Transform spawnPoint = MissileSpawnPoints[i % MissileSpawnPoints.Length];
+
+            if (missilePrefab != null && spawnPoint != null)
+            {
+                GameObject missile = Instantiate(missilePrefab, spawnPoint.position, spawnPoint.rotation);
+                missile.transform.SetParent(spawnPoint, true);
+                MissileController missileController = missile.GetComponent<MissileController>();
+                if (missileController != null)
+                {
+                    missileController.planeController = this;
+                }
+            }
+        }
+    }
+
+    public void FireMissile()
+    {
+        if (MissileSpawnPoints == null)
+        {
+            return;
+        }
+
+        foreach (Transform spawnPoint in MissileSpawnPoints)
+        {
+            if (spawnPoint == null)
+            {
+                continue;
+            }
+
+            MissileController missileController = spawnPoint.GetComponentInChildren<MissileController>();
+            if (missileController != null && !missileController.isDeployed)
+            {
+                missileController.target = target;
+                missileController.Deploy();
+                return;
             }
         }
     }
