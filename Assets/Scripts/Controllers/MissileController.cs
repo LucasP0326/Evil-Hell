@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class MissileController : MonoBehaviour
 {
@@ -21,6 +20,8 @@ public class MissileController : MonoBehaviour
     public bool isHoming = true;
     public float proximityRadius = 5f;
     public float speed = 15f;
+    [Tooltip("Time in seconds to turn up to 180 degrees toward the target.")]
+    public float turnTime = 1f;
     public int damage = 50;
     public float explosionRadius = 10f;
     public float lifetime = 25f;
@@ -66,7 +67,19 @@ public class MissileController : MonoBehaviour
 
             if (isHoming)
             {
-                Vector3 direction = directionToTarget.normalized;
+                Vector3 currentVelocity = missileRigidbody.linearVelocity;
+                Vector3 currentDirection = currentVelocity.sqrMagnitude > 0f
+                    ? currentVelocity.normalized
+                    : transform.forward;
+                Vector3 targetDirection = directionToTarget.normalized;
+                float maxTurnRadians = turnTime <= 0f
+                    ? Mathf.PI
+                    : Mathf.PI * Time.fixedDeltaTime / turnTime;
+                Vector3 direction = Vector3.RotateTowards(
+                    currentDirection,
+                    targetDirection,
+                    maxTurnRadians,
+                    0f);
                 missileRigidbody.linearVelocity = direction * speed;
                 if (direction.sqrMagnitude > 0f)
                 {
@@ -89,15 +102,7 @@ public class MissileController : MonoBehaviour
     public void PursueTarget()
     {
         isPursuing = true;
-        if (isHoming && target != null)
-        {
-            Vector3 directionToTarget = (target.transform.position - transform.position).normalized;
-            if (missileRigidbody != null)
-            {
-                missileRigidbody.linearVelocity = directionToTarget * speed;
-            }
-        }
-        else if (missileRigidbody != null)
+        if (missileRigidbody != null)
         {
             missileRigidbody.linearVelocity = transform.forward * speed;
         }
