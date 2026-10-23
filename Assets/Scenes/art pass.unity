@@ -223,7 +223,6 @@ GameObject:
   - component: {fileID: 572073727}
   - component: {fileID: 572073726}
   - component: {fileID: 572073725}
-  - component: {fileID: 572073728}
   m_Layer: 0
   m_Name: PlayerCamera
   m_TagString: Untagged
@@ -349,21 +348,6 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
---- !u!114 &572073728
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 572073723}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8221f63ad36525b4b91397f2489b89b4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CameraController
-  sensX: 1
-  sensY: 1
-  orient: {fileID: 1129340284}
 --- !u!1 &577302897
 GameObject:
   m_ObjectHideFlags: 0
@@ -1081,13 +1065,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1129340283}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -1, w: 0.0000002533197}
   m_LocalPosition: {x: -0.07490969, y: -0.75295997, z: 0.40335995}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 443296888}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -180}
 --- !u!1 &1327226242
 GameObject:
   m_ObjectHideFlags: 0
