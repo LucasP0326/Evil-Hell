@@ -12,8 +12,10 @@ public class BulletController : MonoBehaviour
 
     [Header("References")]
     public PlaneController planeController; // Reference to the PlaneController script
+    public Transform frontPivot; // Reference to the front pivot of the bullet for orientation
 
     [Header("Bullet Properties")]
+    public BulletType bulletType;
     public float bulletDamage = 10f;
     public float bulletSpeed = 10f;
     public float bulletLifetime = 5f;
@@ -44,6 +46,12 @@ public class BulletController : MonoBehaviour
         bulletLifetime = lifetime;
         bulletDamage = damage;
         StartCoroutine(DestroyAfterLifetime());
+        
+        //Orient the bullet to face the direction of movement
+        if (frontPivot != null)
+        {
+            frontPivot.forward = bulletRigidbody.linearVelocity.normalized;
+        }
     }
 
     void FixedUpdate()
