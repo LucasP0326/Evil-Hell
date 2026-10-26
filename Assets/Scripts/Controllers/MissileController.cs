@@ -19,13 +19,18 @@ public class MissileController : MonoBehaviour
     public MissileType missileType;
     public bool isHoming = true;
     public float proximityRadius = 5f;
-    public float speed = 15f;
+    public float speed = 5f;
     [Tooltip("Time in seconds to turn up to 180 degrees toward the target.")]
     public float turnTime = 1f;
     public int damage = 50;
     public float explosionRadius = 10f;
-    public float lifetime = 25f;
-    public float deploymentDelay = 0.25f;
+    public float lifetime = 10f;
+    public float deploymentDelay = 0.15f;
+
+    [Header("Movement Settings")]
+    public Transform frontPivot; // Reference to the front pivot of the missile for orientation
+    public float rotationSpeed = 5f; // Speed at which the missile rotates to face the target
+    public float maxTurnAngle = 45f; // Maximum angle the missile can turn per second
 
     private Rigidbody missileRigidbody;
     private Collider missileCollider;
@@ -83,7 +88,11 @@ public class MissileController : MonoBehaviour
                 missileRigidbody.linearVelocity = direction * speed;
                 if (direction.sqrMagnitude > 0f)
                 {
-                    missileRigidbody.MoveRotation(Quaternion.LookRotation(direction));
+                    Vector3 forward = frontPivot != null
+                        ? frontPivot.forward
+                        : transform.forward;
+                    Quaternion rotationDelta = Quaternion.FromToRotation(forward, direction);
+                    missileRigidbody.MoveRotation(rotationDelta * missileRigidbody.rotation);
                 }
             }
         }
