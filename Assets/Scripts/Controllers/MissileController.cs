@@ -35,6 +35,7 @@ public class MissileController : MonoBehaviour
     private Rigidbody missileRigidbody;
     private Collider missileCollider;
     private bool isPursuing;
+    private bool hasCollided;
 
     void Awake()
     {
@@ -61,41 +62,54 @@ public class MissileController : MonoBehaviour
             return;
         }
 
+        Vector3 directionToTarget = Vector3.zero;
+        bool isWithinProximity = false;
         if (target != null)
         {
-            Vector3 directionToTarget = target.transform.position - transform.position;
-            if (directionToTarget.sqrMagnitude <= proximityRadius * proximityRadius)
-            {
-                Explode();
-                return;
-            }
+            directionToTarget = target.transform.position - transform.position;
+            isWithinProximity = directionToTarget.sqrMagnitude <= proximityRadius * proximityRadius;
+        }
 
-            if (isHoming)
+        if (isWithinProximity)
+        {
+            Explode();
+            return;
+        }
+        else if (hasCollided)
+        {
+            Explode();
+            return;
+        }
+        else if (isHoming && target != null)
+        {
+            Vector3 currentVelocity = missileRigidbody.linearVelocity;
+            Vector3 currentDirection = currentVelocity.sqrMagnitude > 0f
+                ? currentVelocity.normalized
+                : transform.forward;
+            Vector3 targetDirection = directionToTarget.normalized;
+            float maxTurnRadians = turnTime <= 0f
+                ? Mathf.PI
+                : Mathf.PI * Time.fixedDeltaTime / turnTime;
+            Vector3 direction = Vector3.RotateTowards(
+                currentDirection,
+                targetDirection,
+                maxTurnRadians,
+                0f);
+            missileRigidbody.linearVelocity = direction * speed;
+            if (direction.sqrMagnitude > 0f)
             {
-                Vector3 currentVelocity = missileRigidbody.linearVelocity;
-                Vector3 currentDirection = currentVelocity.sqrMagnitude > 0f
-                    ? currentVelocity.normalized
+                Vector3 forward = frontPivot != null
+                    ? frontPivot.forward
                     : transform.forward;
-                Vector3 targetDirection = directionToTarget.normalized;
-                float maxTurnRadians = turnTime <= 0f
-                    ? Mathf.PI
-                    : Mathf.PI * Time.fixedDeltaTime / turnTime;
-                Vector3 direction = Vector3.RotateTowards(
-                    currentDirection,
-                    targetDirection,
-                    maxTurnRadians,
-                    0f);
-                missileRigidbody.linearVelocity = direction * speed;
-                if (direction.sqrMagnitude > 0f)
-                {
-                    Vector3 forward = frontPivot != null
-                        ? frontPivot.forward
-                        : transform.forward;
-                    Quaternion rotationDelta = Quaternion.FromToRotation(forward, direction);
-                    missileRigidbody.MoveRotation(rotationDelta * missileRigidbody.rotation);
-                }
+                Quaternion rotationDelta = Quaternion.FromToRotation(forward, direction);
+                missileRigidbody.MoveRotation(rotationDelta * missileRigidbody.rotation);
             }
         }
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        hasCollided = true;
     }
 
     public void Deploy()
@@ -132,11 +146,14 @@ public class MissileController : MonoBehaviour
         {
             TurretController turret = hit.GetComponentInParent<TurretController>();
             PlaneController plane = hit.GetComponentInParent<PlaneController>();
+            AirshipController airship = hit.GetComponentInParent<AirshipController>();
             GameObject enemy = turret != null
                 ? turret.gameObject
                 : plane != null
                     ? plane.gameObject
-                    : null;
+                    : airship != null
+                        ? airship.gameObject
+                        : null;
 
             if (enemy == null ||
                 (!hit.CompareTag("Enemy") && !enemy.CompareTag("Enemy")) ||
@@ -149,7 +166,11 @@ public class MissileController : MonoBehaviour
             {
                 turret.TakeDamage(damage);
             }
-            else
+            else if (airship != null)
+            {
+                airship.TakeDamage(damage);
+            }
+            else if (plane != null)
             {
                 plane.TakeDamage(damage);
             }

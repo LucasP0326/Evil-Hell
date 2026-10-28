@@ -1482,7 +1482,7 @@ MonoBehaviour:
   minCameraPitch: -80
   maxCameraPitch: 80
   initialSpeed: 10
-  maxSpeed: 100
+  maxSpeed: 200
   minSpeed: 10
   currentSpeed: 0
   rotationSpeed: 100

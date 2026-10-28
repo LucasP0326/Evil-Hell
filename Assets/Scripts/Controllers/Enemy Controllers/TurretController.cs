@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.AI;
 
 public class TurretController : MonoBehaviour
 {
@@ -42,6 +43,7 @@ public class TurretController : MonoBehaviour
 
         if (currentTarget != null && turretBall != null)
         {
+            Quaternion previousRotation = turretBall.transform.rotation;
             Vector3 direction = currentTarget.transform.position - turretBall.transform.position;
             if (direction.sqrMagnitude > 0f)
             {
@@ -49,12 +51,57 @@ public class TurretController : MonoBehaviour
                 Quaternion aimRotation = Quaternion.FromToRotation(turretBall.transform.right, direction.normalized);
                 turretBall.transform.rotation = aimRotation * turretBall.transform.rotation;
             }
-            if (Time.time >= nextFireTime)
+
+            float zAngle = Mathf.DeltaAngle(0f, turretBall.transform.localEulerAngles.z);
+            bool isAimBlocked = zAngle >= -135f && zAngle <= -45f;
+            if (isAimBlocked)
+            {
+                turretBall.transform.rotation = previousRotation;
+            }
+            else if (Time.time >= nextFireTime && !IsAllyInFiringLine())
             {
                 ShootProjectile();
                 nextFireTime = Time.time + fireRate;
             }
         }
+    }
+
+    bool IsAllyInFiringLine()
+    {
+        if (projectileSpawnPoint == null || currentTarget == null || allyTags == null)
+        {
+            return false;
+        }
+
+        float distanceToTarget = Vector3.Distance(projectileSpawnPoint.position, currentTarget.transform.position);
+        RaycastHit[] hits = Physics.RaycastAll(
+            projectileSpawnPoint.position,
+            projectileSpawnPoint.forward,
+            distanceToTarget,
+            Physics.DefaultRaycastLayers,
+            QueryTriggerInteraction.Collide);
+
+        foreach (RaycastHit hit in hits)
+        {
+            Transform hitTransform = hit.collider.transform;
+            if (hitTransform == transform || hitTransform.IsChildOf(transform))
+            {
+                continue;
+            }
+
+            for (Transform ancestor = hitTransform; ancestor != null && ancestor != transform; ancestor = ancestor.parent)
+            {
+                foreach (string allyTag in allyTags)
+                {
+                    if (!string.IsNullOrEmpty(allyTag) && ancestor.CompareTag(allyTag))
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
     GameObject FindTargetInRange()
