@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -46,17 +48,32 @@ public class PlaneController : MonoBehaviour
     public float mouseSensitivity = 0.1f;
     private Rigidbody planeRigidbody;
     private Quaternion targetRotation;
+    private Vector3 targetAimPoint;
+    private Vector3 directionToTarget;
+    private Quaternion desiredTargetRotation;
 
-    [Header("Plane Combat Settings")]
+    [Header("Plane Bullet Settings")]
     public GameObject projectilePrefab;
-    public Transform projectileSpawnPoint1;
-    public Transform projectileSpawnPoint2;
     public float projectileSpeed = 20f;
     public float fireRate = 0.5f;
     public float projectileDamage = 10f;
     public float projectileLifetime = 5f;
+    public Transform projectileSpawnPoint1;
+    public Transform projectileSpawnPoint2;
     private bool useSecondProjectileSpawnPoint;
     private float nextFireTime;
+
+    [Header("Plane Missile Settings")]
+    public GameObject[] MissilePrefabs;
+    public Transform[] MissileSpawnPoints;
+
+
+    [Header("Plane Targeting Settings")]
+    public GameObject target;
+    public float timeToLockOnTarget = 0.5f;
+    public float driftToTargetSpeed = 5f;
+    public float targetLockRange = 500f;
+    public float targetAimHeightOffset = -2f;
 
     [Header("Plane Stats")]
     public float health = 100f;
@@ -91,6 +108,11 @@ public class PlaneController : MonoBehaviour
 
             cameraHomeOffset = transform.InverseTransformPoint(cameraStartPosition.position);
             cameraHomeRotation = Quaternion.Inverse(transform.rotation) * cameraStartPosition.rotation;
+        }
+
+        if (MissilePrefabs.Length != 0)
+        {
+            LoadMissiles();
         }
     }
 
@@ -132,8 +154,8 @@ public class PlaneController : MonoBehaviour
             }
             if (inputMode == InputMode.Directional)
             {
-                //Space and Ctrl for Accelerate and Decelerate
-                if (keyboard.spaceKey.isPressed)
+                //Shift and Ctrl for Accelerate and Decelerate
+                if (keyboard.shiftKey.isPressed)
                 {
                     currentSpeed = Mathf.Clamp(currentSpeed + acceleration * Time.deltaTime, minSpeed, maxSpeed);
                 }
@@ -163,6 +185,7 @@ public class PlaneController : MonoBehaviour
                     float pitchInput = (keyboard.wKey.isPressed ? 1f : 0f) - (keyboard.sKey.isPressed ? 1f : 0f);
                     targetRotation *= Quaternion.AngleAxis(pitchInput * rotationSpeed * Time.deltaTime, Vector3.right);
                 }
+
             }
 
         Mouse mouse = Mouse.current;
@@ -206,9 +229,21 @@ public class PlaneController : MonoBehaviour
             nextFireTime = Time.time + fireRate;
         }
 
+        if (keyboard != null && keyboard.spaceKey.wasPressedThisFrame)
+        {
+            FireMissile();
+        }
+
+        // Switch camera perspective when the 'V' key is pressed.
         if (keyboard != null && keyboard.vKey.wasPressedThisFrame)
         {
             SwitchPerspective();
+        }
+
+        //Lock onto target when Right Mouse is pressed
+        if (mouse != null && mouse.rightButton.wasPressedThisFrame)
+        {
+            AcquireTarget();
         }
     }
 
@@ -263,6 +298,71 @@ public class PlaneController : MonoBehaviour
         }
     }
 
+    public void AcquireTarget()
+    {
+        Collider[] hitColliders = Physics.OverlapSphere(transform.position, targetLockRange);
+        Camera targetCamera = Camera.main;
+        if (targetCamera == null || !targetCamera.isActiveAndEnabled)
+        {
+            targetCamera = planeCamera;
+        }
+        if (targetCamera == null || !targetCamera.isActiveAndEnabled)
+        {
+            targetCamera = firstPersonCamera;
+        }
+        if (targetCamera == null || !targetCamera.isActiveAndEnabled)
+        {
+            targetCamera = firstPersonCockpitCamera;
+        }
+
+        if (targetCamera == null || !targetCamera.isActiveAndEnabled)
+        {
+            return;
+        }
+
+        List<GameObject> targets = new List<GameObject>();
+        HashSet<GameObject> uniqueTargets = new HashSet<GameObject>();
+
+        foreach (Collider hitCollider in hitColliders)
+        {
+            if (hitCollider.CompareTag("Enemy"))
+            {
+                GameObject enemy = hitCollider.gameObject;
+                if (uniqueTargets.Add(enemy) && targetCamera.WorldToScreenPoint(enemy.transform.position).z > 0f)
+                {
+                    targets.Add(enemy);
+                }
+            }
+        }
+
+        targets.Sort((a, b) =>
+        {
+            Vector2 screenCenter = new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
+            Vector3 aScreenPosition = targetCamera.WorldToScreenPoint(a.transform.position);
+            Vector3 bScreenPosition = targetCamera.WorldToScreenPoint(b.transform.position);
+            float aCenterDistance = ((Vector2)aScreenPosition - screenCenter).sqrMagnitude;
+            float bCenterDistance = ((Vector2)bScreenPosition - screenCenter).sqrMagnitude;
+            int centerComparison = aCenterDistance.CompareTo(bCenterDistance);
+            return centerComparison != 0
+                ? centerComparison
+                : Vector3.Distance(transform.position, a.transform.position).CompareTo(
+                    Vector3.Distance(transform.position, b.transform.position));
+        });
+
+        if (targets.Count == 0)
+        {
+            target = null;
+            ResetTargetDrift();
+            return;
+        }
+
+        int currentIndex = targets.IndexOf(target);
+        target = targets[(currentIndex + 1) % targets.Count];
+
+        if (inputMode == InputMode.Directional)
+            StartCoroutine(LockOnTargetCoroutine());
+    }
+
     public void ShootProjectile()
     {
         if (projectilePrefab != null)
@@ -285,6 +385,56 @@ public class PlaneController : MonoBehaviour
             {
                 float bulletSpeed = Mathf.Max(projectileSpeed * currentSpeed, currentSpeed);
                 projectileRigidbody.linearVelocity = transform.forward * bulletSpeed;
+            }
+        }
+    }
+
+    public void LoadMissiles()
+    {
+        if (MissilePrefabs.Length == 0 || MissileSpawnPoints.Length == 0)
+        {
+            Debug.LogWarning("No missile prefabs or spawn points assigned.");
+            return;
+        }
+
+        for (int i = 0; i < MissilePrefabs.Length; i++)
+        {
+            GameObject missilePrefab = MissilePrefabs[i];
+            Transform spawnPoint = MissileSpawnPoints[i % MissileSpawnPoints.Length];
+
+            if (missilePrefab != null && spawnPoint != null)
+            {
+                GameObject missile = Instantiate(missilePrefab, spawnPoint.position, spawnPoint.rotation);
+                missile.transform.SetParent(spawnPoint, true);
+                MissileController missileController = missile.GetComponent<MissileController>();
+                if (missileController != null)
+                {
+                    missileController.planeController = this;
+                }
+            }
+        }
+    }
+
+    public void FireMissile()
+    {
+        if (MissileSpawnPoints == null)
+        {
+            return;
+        }
+
+        foreach (Transform spawnPoint in MissileSpawnPoints)
+        {
+            if (spawnPoint == null)
+            {
+                continue;
+            }
+
+            MissileController missileController = spawnPoint.GetComponentInChildren<MissileController>();
+            if (missileController != null && !missileController.isDeployed)
+            {
+                missileController.target = target;
+                missileController.Deploy();
+                return;
             }
         }
     }
@@ -316,5 +466,54 @@ public class PlaneController : MonoBehaviour
     {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+    }
+
+    IEnumerator LockOnTargetCoroutine()
+    {
+        Debug.Log("Locking on target: " + (target != null ? target.name : "None"));
+        float elapsedTime = 0f;
+        while (elapsedTime < timeToLockOnTarget)
+        {
+            if (target == null)
+            {
+                ResetTargetDrift();
+                yield break;
+            }
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+        if (target == null || driftToTargetSpeed <= 0f)
+        {
+            ResetTargetDrift();
+            yield break;
+        }
+
+        targetAimPoint = target.transform.position + Vector3.up * targetAimHeightOffset;
+        directionToTarget = targetAimPoint - transform.position;
+        if (directionToTarget.sqrMagnitude > 0f)
+        {
+            desiredTargetRotation = Quaternion.LookRotation(directionToTarget, transform.up);
+            while (target != null && Quaternion.Angle(targetRotation, desiredTargetRotation) > 0.1f)
+            {
+                targetRotation = Quaternion.RotateTowards(
+                    targetRotation,
+                    desiredTargetRotation,
+                    driftToTargetSpeed * Time.deltaTime);
+                yield return null;
+            }
+
+            if (target == null)
+            {
+                ResetTargetDrift();
+            }
+        }
+    }
+
+    private void ResetTargetDrift()
+    {
+        targetAimPoint = Vector3.zero;
+        directionToTarget = Vector3.zero;
+        targetRotation = planeRigidbody != null ? planeRigidbody.rotation : transform.rotation;
+        desiredTargetRotation = targetRotation;
     }
 }

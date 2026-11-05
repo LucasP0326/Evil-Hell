@@ -61,7 +61,7 @@ MonoBehaviour:
   projectileSpawnPoint: {fileID: 3514266543326672112}
   fireRate: 1
   damage: 10
-  projectileSpeed: 20
+  projectileSpeed: 40
   turretBase: {fileID: 2005076629792855068}
   turretBall: {fileID: 2711490766291015000}
 --- !u!65 &2071476389113044880
