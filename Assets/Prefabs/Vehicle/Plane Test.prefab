@@ -1452,10 +1452,10 @@ Transform:
   - {fileID: 8832240889031731846}
   - {fileID: 617973620043559034}
   - {fileID: 295357415874803933}
+  - {fileID: 1534213906009477387}
   - {fileID: 1852702471768219498}
   - {fileID: 6961201165559152980}
   - {fileID: 5156716325146489258}
-  - {fileID: 1534213906009477387}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &8921281638330613858
@@ -1485,7 +1485,11 @@ MonoBehaviour:
   maxSpeed: 200
   minSpeed: 10
   currentSpeed: 0
+  currentVelocity: 0
+  minimumVelocityLossForDamage: 5
+  damagePerVelocityUnitLost: 5
   rotationSpeed: 100
+  yawSpeed: 25
   acceleration: 10
   mouseSensitivity: 0.1
   projectilePrefab: {fileID: 6272848523168895610, guid: a0c64a9f02d7ea0459f3765f79a83f23, type: 3}

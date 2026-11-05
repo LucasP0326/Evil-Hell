@@ -9,18 +9,18 @@ public class AirshipController : MonoBehaviour
         Bomber,
         GunPlatform
     }
-
-    //References
-    private StateMachine stateMachine;
-
-    
+   
 
     [Header("Airship Settings")]
     public AirshipType airshipType;
     public float health = 5000f;
     public float maxHealth = 5000f;
+    public float visionRange = 1000f;
+    public float speed = 10f;
 
-    
+    [Header("Targeting Settings")]
+    public Transform frontPivot;
+    public GameObject target;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()

@@ -25,7 +25,7 @@ public class PlaneController : MonoBehaviour
     [Header("Camera Settings")]
     public CameraMode cameraMode = CameraMode.ThirdPerson;
     public Camera planeCamera;
-        public Camera firstPersonCamera;
+    public Camera firstPersonCamera;
     public Camera firstPersonCockpitCamera;
     public Transform cameraStartPosition;
     public float cameraOrbitSensitivity = 0.2f;
@@ -43,10 +43,15 @@ public class PlaneController : MonoBehaviour
     public float maxSpeed = 50f;
     public float minSpeed = 5f;
     public float currentSpeed = 10f;
+    public float currentVelocity = 0f;
+    public float minimumVelocityLossForDamage = 5f;
+    public float damagePerVelocityUnitLost = 1f;
     public float rotationSpeed = 100f;
+    public float yawSpeed = 10f;
     public float acceleration = 10f;
     public float mouseSensitivity = 0.1f;
     private Rigidbody planeRigidbody;
+    private float previousVelocity;
     private Quaternion targetRotation;
     private Vector3 targetAimPoint;
     private Vector3 directionToTarget;
@@ -119,6 +124,8 @@ public class PlaneController : MonoBehaviour
     void Start()
     {
         planeRigidbody.linearVelocity = transform.forward * currentSpeed;
+        currentVelocity = planeRigidbody.linearVelocity.magnitude;
+        previousVelocity = currentVelocity;
     }
 
     void OnEnable()
@@ -150,7 +157,7 @@ public class PlaneController : MonoBehaviour
 
                 //E and Q for Yaw
                 float yawInput = (keyboard.eKey.isPressed ? 1f : 0f) - (keyboard.qKey.isPressed ? 1f : 0f);
-                targetRotation *= Quaternion.AngleAxis(yawInput * rotationSpeed * Time.deltaTime, Vector3.up);
+                targetRotation *= Quaternion.AngleAxis(yawInput * yawSpeed * Time.deltaTime, Vector3.up);
             }
             if (inputMode == InputMode.Directional)
             {
@@ -172,7 +179,7 @@ public class PlaneController : MonoBehaviour
 
                 //E and Q for Yaw
                 float yawInput = (keyboard.eKey.isPressed ? 1f : 0f) - (keyboard.qKey.isPressed ? 1f : 0f);
-                targetRotation *= Quaternion.AngleAxis(yawInput * rotationSpeed * Time.deltaTime, Vector3.up);
+                targetRotation *= Quaternion.AngleAxis(yawInput * yawSpeed * Time.deltaTime, Vector3.up);
 
                 //W and S for Pitch (Change with invertVerticalFlight)
                 if (invertVerticalFlight)
@@ -245,6 +252,9 @@ public class PlaneController : MonoBehaviour
         {
             AcquireTarget();
         }
+
+        //Calculate Velocity
+        currentVelocity = planeRigidbody.linearVelocity.magnitude;
     }
 
     void LateUpdate()
@@ -263,6 +273,14 @@ public class PlaneController : MonoBehaviour
 
     void FixedUpdate()
     {
+        currentVelocity = planeRigidbody.linearVelocity.magnitude;
+        float velocityLost = previousVelocity - currentVelocity;
+        if (velocityLost > 0f && velocityLost >= Mathf.Max(minimumVelocityLossForDamage, 0f))
+        {
+            TakeDamage(velocityLost * Mathf.Max(damagePerVelocityUnitLost, 0f));
+        }
+        previousVelocity = currentVelocity;
+
         planeRigidbody.MoveRotation(targetRotation);
         planeRigidbody.linearVelocity = targetRotation * Vector3.forward * currentSpeed;
     }
@@ -459,6 +477,12 @@ public class PlaneController : MonoBehaviour
             // Handle collision with enemy projectile
             Destroy(other.gameObject);
             TakeDamage(other.GetComponent<BulletController>().bulletDamage);
+        }
+        else if (other.CompareTag("Missile"))
+        {
+            // Handle collision with enemy missile
+            Destroy(other.gameObject);
+            TakeDamage(other.GetComponent<MissileController>().damage);
         }
     }
 
