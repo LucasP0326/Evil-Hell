@@ -22,6 +22,6 @@ public class AirshipStateMachine : MonoBehaviour
     private void SwitchToNextState(State nextState)
     {
         currentState = nextState;
-    }  
+    } 
 }
 

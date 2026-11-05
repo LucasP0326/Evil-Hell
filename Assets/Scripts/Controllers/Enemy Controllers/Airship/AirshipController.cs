@@ -16,7 +16,12 @@ public class AirshipController : MonoBehaviour
     public float health = 5000f;
     public float maxHealth = 5000f;
     public float visionRange = 1000f;
+
+    [Header("Movement Settings")]
+    public Transform moveTarget;
     public float speed = 10f;
+    public float rotationSpeed = 5f;
+    public float maxTurnAngle = 45f;
 
     [Header("Targeting Settings")]
     public Transform frontPivot;
@@ -31,7 +36,7 @@ public class AirshipController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        MoveTowardsTarget();
     }
 
     public void TakeDamage(float damageAmount)
@@ -55,5 +60,46 @@ public class AirshipController : MonoBehaviour
             Destroy(other.gameObject);
             TakeDamage(other.GetComponent<BulletController>().bulletDamage);
         }
+    }
+
+    public void MoveToPoint(Transform point)
+    {
+        moveTarget = point;
+    }
+
+    private void MoveTowardsTarget()
+    {
+        if (moveTarget == null)
+        {
+            return;
+        }
+
+        Vector3 directionToTarget = moveTarget.position - transform.position;
+        if (directionToTarget.sqrMagnitude <= 0.0001f)
+        {
+            return;
+        }
+
+        float deltaTime = Time.deltaTime;
+        Transform forwardPivot = frontPivot != null ? frontPivot : transform;
+        float turnStep = Mathf.Min(
+            Mathf.Max(0f, rotationSpeed) * deltaTime,
+            Mathf.Max(0f, maxTurnAngle));
+
+        if (turnStep > 0f)
+        {
+            Vector3 turnedForward = Vector3.RotateTowards(
+                forwardPivot.forward,
+                directionToTarget.normalized,
+                turnStep * Mathf.Deg2Rad,
+                0f);
+            Quaternion rotationDelta = Quaternion.FromToRotation(forwardPivot.forward, turnedForward);
+            transform.rotation = rotationDelta * transform.rotation;
+        }
+
+        transform.position = Vector3.MoveTowards(
+            transform.position,
+            moveTarget.position,
+            Mathf.Max(0f, speed) * deltaTime);
     }
 }
