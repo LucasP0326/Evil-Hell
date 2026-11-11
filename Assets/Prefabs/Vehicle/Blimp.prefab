@@ -49,7 +49,12 @@ MonoBehaviour:
   idleState: {fileID: 8390684743164523335}
   pursueState: {fileID: 1722671561673841003}
   canSeePlayer: 0
-  patrolPoints: []
+  patrolPoints:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  currentPatrolPoint: {fileID: 0}
 --- !u!1 &976694007724857247
 GameObject:
   m_ObjectHideFlags: 0
@@ -601,6 +606,7 @@ GameObject:
   - component: {fileID: 3252518083792965708}
   - component: {fileID: 5595564554419553847}
   - component: {fileID: 8681269702587412095}
+  - component: {fileID: 2429576997944006842}
   - component: {fileID: 2287819909782050683}
   - component: {fileID: 8918947251827764870}
   m_Layer: 0
@@ -710,6 +716,33 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!54 &2429576997944006842
+Rigidbody:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4792966377972597159}
+  serializedVersion: 5
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
+  m_UseGravity: 0
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!114 &2287819909782050683
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -723,10 +756,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AirshipController
   airshipType: 0
-  health: 500
-  maxHealth: 500
+  health: 5000
+  maxHealth: 5000
   visionRange: 1000
+  moveTarget: {fileID: 0}
+  targetMarginofError: 5
   speed: 10
+  turnTime: 5
+  rotationSpeed: 5
+  maxTurnAngle: 45
   frontPivot: {fileID: 7181535940848538942}
   target: {fileID: 0}
 --- !u!114 &8918947251827764870
@@ -741,7 +779,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2bd41da07127edf4198e932d76df059d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AirshipStateMachine
-  currentState: {fileID: 8390684743164523335}
+  currentState: {fileID: 5593309214900782275}
 --- !u!1 &6937418220744149852
 GameObject:
   m_ObjectHideFlags: 0

@@ -170,7 +170,7 @@ MonoBehaviour:
   damage: 50
   explosionRadius: 10
   lifetime: 10
-  deploymentDelay: 0.1
+  deploymentDelay: 0.025
   frontPivot: {fileID: 7124859437282892369}
   rotationSpeed: 5
   maxTurnAngle: 45
