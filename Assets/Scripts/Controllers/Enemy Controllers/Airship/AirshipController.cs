@@ -19,7 +19,10 @@ public class AirshipController : MonoBehaviour
 
     [Header("Movement Settings")]
     public Transform moveTarget;
+    public float targetMarginofError = 5f;
+    private Rigidbody airshipRigidbody;
     public float speed = 10f;
+    public float turnTime = 1f;
     public float rotationSpeed = 5f;
     public float maxTurnAngle = 45f;
 
@@ -28,6 +31,16 @@ public class AirshipController : MonoBehaviour
     public GameObject target;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
+    void Awake()
+    {
+        airshipRigidbody = GetComponent<Rigidbody>();
+        if (airshipRigidbody != null)
+        {
+            //airshipRigidbody.isKinematic = true;
+            airshipRigidbody.useGravity = false;
+        }
+    }
+    
     void Start()
     {
         
@@ -37,6 +50,42 @@ public class AirshipController : MonoBehaviour
     void Update()
     {
         MoveTowardsTarget();
+    }
+
+    void FixedUpdate()
+    {
+        Vector3 directionToTarget = Vector3.zero;
+
+        if (moveTarget != null)
+        {
+            directionToTarget = moveTarget.position - transform.position;
+        }
+
+        if (moveTarget != null)
+        {
+            Vector3 currentVelocity = airshipRigidbody.linearVelocity;
+            Vector3 currentDirection = currentVelocity.sqrMagnitude > 0f
+                ? currentVelocity.normalized
+                : transform.forward;
+            Vector3 targetDirection = directionToTarget.normalized;
+            float maxTurnRadians = turnTime <= 0f
+                ? Mathf.PI
+                : Mathf.PI * Time.fixedDeltaTime / turnTime;
+            Vector3 direction = Vector3.RotateTowards(
+                currentDirection,
+                targetDirection,
+                maxTurnRadians,
+                0f);
+            airshipRigidbody.linearVelocity = direction * speed;
+            if (direction.sqrMagnitude > 0f)
+            {
+                Vector3 forward = frontPivot != null
+                    ? frontPivot.forward
+                    : transform.forward;
+                Quaternion rotationDelta = Quaternion.FromToRotation(forward, direction);
+                airshipRigidbody.MoveRotation(rotationDelta * airshipRigidbody.rotation);
+            }
+        }
     }
 
     public void TakeDamage(float damageAmount)

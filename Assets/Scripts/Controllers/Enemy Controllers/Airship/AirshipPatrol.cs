@@ -38,7 +38,7 @@ public class AirshipPatrol : State
         }
 
         if (currentPatrolPoint != null &&
-            (airshipController.transform.position - currentPatrolPoint.position).sqrMagnitude <= 0.0001f)
+            (airshipController.transform.position - currentPatrolPoint.position).sqrMagnitude <= airshipController.targetMarginofError * airshipController.targetMarginofError)
         {
             currentPatrolPointIndex = (currentPatrolPointIndex + 1) % patrolPoints.Length;
             currentPatrolPoint = null;
